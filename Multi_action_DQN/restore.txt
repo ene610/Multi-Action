@@ -1,0 +1,148 @@
+if __name__ == "__main__":
+
+    # q_net = QNet(observe_dim, action_num)
+    # q_net_t = QNet(observe_dim, action_num)
+
+    ###############################################
+    q_net_column = QNet(observe_dim_column, action_num_column)
+    q_net_t_column = QNet(observe_dim_column, action_num_column)
+
+    q_net_color = QNet(observe_dim_color, action_num_color)
+    q_net_t_color = QNet(observe_dim_color, action_num_color)
+
+    q_net_pit = QNet(observe_dim_pit, action_num_pit)
+    q_net_t_pit = QNet(observe_dim_pit, action_num_pit)
+    ###############################################
+
+    # dqn = DQN(q_net, q_net_t, t.optim.Adam, nn.MSELoss(reduction='sum'))
+    ###############################################
+
+    dqn_column = DQN(q_net_column, q_net_t_column, t.optim.Adam, nn.MSELoss(reduction='sum'))
+    dqn_color = DQN(q_net_color, q_net_t_color, t.optim.Adam, nn.MSELoss(reduction='sum'))
+    dqn_pit = DQN(q_net_pit, q_net_t_pit, t.optim.Adam, nn.MSELoss(reduction='sum'))
+
+    ###############################################
+
+    episode, step, reward_fulfilled = 0, 0, 0
+    smoothed_total_reward = 0
+
+    while episode < max_episodes:
+
+        episode += 1
+        total_reward = 0
+        terminal = False
+        step = 0
+        state = t.tensor(env.reset(), dtype=t.float32).view(1, observe_dim)
+
+        while not terminal and step <= max_steps:
+
+            step += 1
+            with t.no_grad():
+                old_state = state
+
+                ## processo 1 dqn####
+                # action = dqn.act_discrete_with_noise({"state" : old_state})
+
+                # state, reward, terminal, _ = env.step(action.item())
+                # state = t.tensor(state, dtype=t.float32).view(1, observe_dim)
+                # total_reward += reward
+                ### store transition ###
+
+                # critic_row = env.critic_row_choice(row_choice)
+
+                # critic_color = env.critic_color_choice(row_choice,color_choice)
+
+                # critic_pit = env.critic_pit_choice(color_choice, pit_choice)
+
+                ### proceesso 3 dqn ###
+
+                # obs_e azioni
+                obs_column = env.obs_for_column_choice()
+                old_state_column = t.tensor(obs_column, dtype=t.float32).view(1, observe_dim_column)
+                action_column = dqn_column.act_discrete_with_noise({"state": old_state_column})
+                critic_row = env.pygame.critic_row_choice(action_column)
+
+                obs_color = env.obs_for_color_choice()
+                obs_color.append(action_column.item())
+                old_state_color = t.tensor(obs_color, dtype=t.float32).view(1, observe_dim_color)
+                action_color = dqn_color.act_discrete_with_noise({"state": old_state_color})
+                critic_color = env.pygame.critic_color_choice(action_column, action_color)
+
+                n_free_tiles = env.count_free_tiles(action_column)
+                obs_pit = env.obs_for_pit_choice()
+                obs_pit.append(n_free_tiles)
+                obs_pit.append(action_color.item())
+                old_state_pit = t.tensor(obs_pit, dtype=t.float32).view(1, observe_dim_pit)
+                action_pit = dqn_pit.act_discrete_with_noise({"state": old_state_pit})
+                critic_pit = env.pygame.critic_pit_choice(action_color, action_pit)
+
+                ###############################################
+                action = env.pygame.game.from_tuple_action_to_action(action_pit.item(), action_color.item(),
+                                                                     action_column.item())
+
+                _, reward, terminal, _ = env.step(action)
+
+                #################################################
+                # zero perchè non va appeso nulla
+                obs_column = env.obs_for_column_choice()
+
+                state_column = t.tensor(obs_column, dtype=t.int8).view(1, observe_dim_column)
+
+                obs_color = env.obs_for_color_choice()
+                obs_color.append(0)
+                state_color = t.tensor(obs_color, dtype=t.int8).view(1, observe_dim_color)
+
+                obs_pit = env.obs_for_pit_choice()
+                obs_pit.append(0)
+                obs_pit.append(0)
+                state_pit = t.tensor(obs_pit, dtype=t.int8).view(1, observe_dim_pit)
+
+                total_reward += reward
+
+                # todo rifai tutto
+                if critic_row != 0:
+                    reward_column = critic_row
+                    reward_color = 0
+                    reward_pit = 0
+                elif critic_color != 0:
+                    reward_column = 0
+                    reward_color = critic_color
+                    reward_pit = 0
+                elif critic_pit != 0:
+                    reward_column = 0
+                    reward_color = 0
+                    reward_pit = critic_pit
+                else:
+                    reward_column = reward
+                    reward_color = reward
+                    reward_pit = reward
+                # print(reward_column,reward_color,reward_pit)
+
+                store_transition(dqn_column, old_state_column, action_column, state_column, reward_column, terminal,
+                                 step)
+                store_transition(dqn_color, old_state_color, action_color, state_color, reward_color, terminal, step)
+                store_transition(dqn_pit, old_state_pit, action_pit, state_pit, reward_pit, terminal, step)
+                #####################################################
+
+        print("n steps:", step, " terminal:", terminal)
+        env.render()
+
+        # update, update more if episode is longer, else less
+        if episode > 100:
+            for _ in range(step):
+                dqn_column.update()
+                dqn_color.update()
+                dqn_pit.update()
+
+        # show reward
+        smoothed_total_reward = (smoothed_total_reward * 0.9 + total_reward * 0.1)
+
+        logger.info("Episode {} total reward={:.2f}".format(episode, smoothed_total_reward))
+
+        if smoothed_total_reward > solved_reward:
+            reward_fulfilled += 1
+            if reward_fulfilled >= solved_repeat:
+                logger.info("Environment solved!")
+                exit(0)
+        else:
+            reward_fulfilled = 0
