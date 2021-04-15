@@ -8,6 +8,7 @@
 from copy import deepcopy
 from MCTS import *
 from AzulGame import *
+import RandomAzulPlayerPlus
 
 # Tic Tac Toe board class
 class Board():
@@ -42,7 +43,7 @@ class Board():
         return actions
 
     # main game loop
-    def game_loop(self):
+    def game_loop_vs_human(self):
         print('\n  Tic Tac Toe by Code Monkey King\n')
         print('  Type "exit" to quit the game')
         print('  Move format [x,y]: 1,2 where 1 is column and 2 is row')
@@ -110,6 +111,48 @@ class Board():
                     print("is done phase\n")
                     break
 
+
+    def game_loop_vs_random_player(self):
+
+        # print board
+        print(self)
+
+        # create MCTS instance
+        mcts = MCTS()
+
+        # game loop
+        while True:
+
+            player_to_play = self.game.player_turn
+            random_player = RandomAzulPlayerPlus.RandomAzulPlayerPlus("P1")
+            
+            if player_to_play == "P1":
+                random_player.set_board(self.game)
+                pit_choice, tile_type, column_choice = random_player.random_action()
+                self = self.make_move(player_to_play, pit_choice, tile_type, column_choice)
+                print(self)
+            #else gioca MCTS
+
+            else:
+                best_move = mcts.search(self)
+                # legal moves available
+                try:
+                # make AI move here
+                    self = best_move.board
+                    print("MCTS played:", self.game.pit_choice, self.game.color_choice, self.game.row_choice)
+                # game over
+                except:
+                    pass
+                print(self)
+
+                # print board
+
+
+                # check if the game is won
+            if self.game.is_done_phase:
+                    print("is done phase\n")
+                    break
+
     # print board state
     def __str__(self):
         return self.game.game_to_string()
@@ -123,4 +166,4 @@ if __name__ == '__main__':
     board.game = game
 
     # start game loop
-    board.game_loop()
+    board.game_loop_vs_random_player()

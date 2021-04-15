@@ -48,6 +48,7 @@ class Azul_game():
         # return [first_row , second_row , third_row , fourth_row , fifth_row]
         return [[0], [0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]]
 
+    #TODO refactor
     def create_random_drawing_pit(self):
         pit_collection = []
 
@@ -592,8 +593,6 @@ class Azul_game():
 
         return row, column, color, expected_row_points, expected_column_point
 
-
-
     def from_action_to_tuple_action(self, action):
 
         action_pit_choice = 0
@@ -655,3 +654,42 @@ class Azul_game():
         board_str += "=" * 20 + "\n"
 
         return board_str
+
+    def observe_board(self):
+
+        # TODO board p1
+        pd_board_p1 = pd.DataFrame(self.board_p1)
+        pd_rows_p1 = pd.DataFrame(self.rows_p1).fillna(0).astype(int)
+        total_board_p1 = pd.concat([pd_board_p1, pd_rows_p1], axis=1)
+
+        # TODO board p2
+        pd_board_p2 = pd.DataFrame(self.board_p2)
+        pd_rows_p2 = pd.DataFrame(self.rows_p2).fillna(0).astype(int)
+        total_board_p2 = pd.concat([pd_board_p2, pd_rows_p2], axis=1)
+
+        # TODO penality and pits
+        reshaped_penality_p1 = [self.penalty_row_p1[:5], self.penalty_row_p1[5:]]
+        reshaped_penality_p2 = [self.penalty_row_p2[:5], self.penalty_row_p2[5:]]
+
+        pd_penality_p1 = pd.DataFrame(reshaped_penality_p1).fillna(0).astype(int)
+        pd_penality_p2 = pd.DataFrame(reshaped_penality_p2).fillna(0).astype(int)
+        pd_pits = pd.DataFrame(self.drawing_pit)
+
+        pd_penalities_and_pits = pd.concat([pd_penality_p1, pd_penality_p2, pd_pits], axis=0)
+
+        #TODO concatena le due board dei player
+        pd_both_player_board = pd.concat([total_board_p1, total_board_p2], axis=0)
+
+        #TODO concatena la final board con pits e penality
+        pd_both_player_board.reset_index(drop=True, inplace=True)
+        pd_penalities_and_pits.reset_index(drop=True, inplace=True)
+        final_board = pd.concat([pd_both_player_board, pd_penalities_and_pits], axis=1)
+
+
+        #shape(15,10)
+        return final_board.values.tolist()
+
+
+
+
+
