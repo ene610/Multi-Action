@@ -1,6 +1,6 @@
 
-from Multi_Action.AzulGame import Azul_game
-import Multi_Action.RandomAzulPlayer as RandomAzulPlayer
+from AzulGame import Azul_game
+import RandomAzulPlayer as RandomAzulPlayer
 import gym
 from gym import spaces
 import random
