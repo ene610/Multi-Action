@@ -1,16 +1,18 @@
-import AzulGame
 
-import RandomAzulPlayer
+
+from Multi_Action.AzulGame import Azul_game
+import Multi_Action.RandomAzulPlayer as RandomAzulPlayer
 import gym
 from gym import spaces
 import random
 import numpy as np
 
 
+
 class Azul_interface():
 
     def __init__(self):
-        self.game = AzulGame()
+        self.game = Azul_game()
         self.penality_for_action = 0
         self.penality_row_prev_action = [0, 0, 0, 0, 0, 0, 0]
         self.opponent_turn = "P2"
@@ -27,6 +29,7 @@ class Azul_interface():
     def action(self, action):
         self.action_pit_choice, self.action_tile_type, self.action_column_choice = self.game.from_action_to_tuple_action(
             action)
+
         self.valid_move = self.game.valid_move(self.player_AI, self.action_pit_choice, self.action_tile_type,
                                                self.action_column_choice)
 

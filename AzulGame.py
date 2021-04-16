@@ -11,6 +11,7 @@ class Azul_game():
 
         self.player_turn = "P1"
         self.initial_player = "P1"
+
         # refattorizza nome
         self.new_first_player = True
 
@@ -688,8 +689,3 @@ class Azul_game():
 
         #shape(15,10)
         return final_board.values.tolist()
-
-
-
-
-

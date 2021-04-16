@@ -10,7 +10,6 @@ from gym.envs.registration import register
 
 from Multi_Action.DQN_AZUL.Env_mini_azul import CustomEnv
 
-
 def main():
 
     id_str = "GraphWorld-v1"
@@ -58,7 +57,6 @@ def main():
     # Since observations from CartPole-v0 is numpy.float64 while
     # As PyTorch only accepts numpy.float32 by default, specify
     # a converter as a feature extractor function phi.
-    phi = lambda x: x.astype(numpy.float32, copy=False)
 
     # Set the device id to use GPU. To use CPU only, set it to -1.
     gpu = -1
@@ -70,11 +68,10 @@ def main():
         replay_buffer,
         gamma,
         explorer,
-        replay_start_size=500,
-        update_interval=1,
-        target_update_interval=100,
-        phi=phi,
-        gpu=gpu,
+        replay_start_size = 500,
+        update_interval = 1,
+        target_update_interval = 100,
+        gpu = gpu,
     )
 
     n_episodes = 300 * 1000
@@ -103,5 +100,5 @@ def main():
             print('statistics:', agent.get_statistics())
     print('Finished.')
 
-if __name__ == "__main__":
+if __name__ == "__main__" :
     main()
