@@ -2,8 +2,7 @@ import gym
 from gym import spaces
 import random
 
-from Multi_Action.Azul_Interface import Azul_interface
-
+from DQN_Mini_Azul import Azul_interface
 
 class CustomEnv(gym.Env):
 

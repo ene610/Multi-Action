@@ -1,7 +1,6 @@
+
 import Multi_Action.AzulGame as AzulGame
-
 import Multi_Action.RandomAzulPlayer as RandomAzulPlayer
-
 import numpy as np
 
 
