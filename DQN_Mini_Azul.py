@@ -54,7 +54,10 @@ class Azul_interface():
     def is_done(self):
 
         if self.game.is_done_phase:
+            self.game.calculate_score("P1")
+            self.game.calculate_score("P2")
             return True
+
         # per tutto il game
         # if(self.game.gameover):
         #
