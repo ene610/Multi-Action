@@ -590,7 +590,7 @@ class Azul_game():
         color = count_tiles_in_column + action_analisys_color(board, tile_type)
 
         self.analisys_row, self.analisys_column, self.analisys_color, self.analisys_expected_row_points, \
-        self.analisys_column_point = row, column, color, expected_row_points, expected_column_point
+        self.analisys_column_points = row, column, color, expected_row_points, expected_column_point
 
         return row, column, color, expected_row_points, expected_column_point
 
